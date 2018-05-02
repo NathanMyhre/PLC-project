@@ -19,14 +19,19 @@ insertEdge :: String -> STree -> STree
 insertEdge s Leaf = Node [(s, Leaf)]
 insertEdge s (Node xs) = Node (xs ++ (s , Leaf) : [])
 
-{- Split an edge into a subtree, containing prefix and suffix
+{- Split an edge into a subtree, after a given prefix.
    Assume that at least 1 letter from string matches, and will always
    end with "$"
+
+   Case 1: Edge to split ends in a leaf:
+     In this case, we should just traverse the leaf and insert the
+     suffix at the first point where input string and edge string
+     are different. e.g. "ab$" and ("abcab$", Leaf) will become edge:
+     ("ab", Node [("$", Leaf), ("cab$", Leaf)])
 -}
 splitEdge :: String -> Edge -> Edge
 splitEdge [] _ = ([], Leaf)
-splitEdge (s : '$' : []) Leaf = ((s : '$' : []), Leaf)
-splitEdge (s : st) Leaf = 
+ 
 
 -- Searches edges leaving a single node for a desired prefix.
 -- Just a dumb search algorithm, we're only using it with 4 letters so
