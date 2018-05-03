@@ -1,0 +1,27 @@
+Nathan Myhre and Collin Lidstrom
+Progress Report
+Programming Language Concepts
+
+For our project, we are completing the bioinformatics option. We decided to
+create our own Suffix Tree data type, called STree. This type consists of
+Nodes, Edges, and Leafs:
+
+type Edge = (String, STree)
+
+data STree = Leaf | Node [Edge]
+
+The Edges contain a string's prefix, and a subtree, containing possible
+suffixes. To build a suffix tree, there is a naive, brute force algorithm
+that we can use that processes the string char by char. It is slow, but the
+implementation is far less complicated.
+
+We are not finished with the algorithm to build the tree. We are discovering
+that we require lots of helper functions to handle the intricate details, like
+Tree Traversal, inserting edges, etc. This has been a challenge, and we are
+still working out the finer details about this.
+
+What we still have left to do is to make query functions. Some examples that
+we would like to implement are, how many instances of a given substring exist
+within an input. We also need to get some file-reading functionality worked
+into our project, with the goal of getting some user interaction with the
+program.
