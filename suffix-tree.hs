@@ -28,10 +28,28 @@ insertEdge s (Node xs) = Node (xs ++ (s , Leaf) : [])
      suffix at the first point where input string and edge string
      are different. e.g. "ab$" and ("abcab$", Leaf) will become edge:
      ("ab", Node [("$", Leaf), ("cab$", Leaf)])
+
+   Case 2: Edge to split contains part
 -}
 splitEdge :: String -> Edge -> Edge
-splitEdge [] _ = ([], Leaf)
- 
+splitEdge [] e = ([], Leaf)
+splitEdge s (s', n) = let (x, y) = (uncommonSuffix s s') in
+                      ((commonPrefix s s'), Node [(y, n), (x, Leaf)])
+
+-- helpers for splitEdge -------------------------------------------------------
+-- Find common prefix between two strings
+commonPrefix :: Eq a => [a] -> [a] -> [a]
+commonPrefix [] _ = []
+commonPrefix _ [] = []
+commonPrefix (x : xs) (y : ys) = if x == y then (x : (commonPrefix xs ys))
+                             else []
+-- Return the uncommon suffixes 
+uncommonSuffix :: Eq a => [a] -> [a] -> ([a], [a])
+uncommonSuffix [] b = ([], b)
+uncommonSuffix a [] = (a, [])
+uncommonSuffix (x : xs) (y : ys) = if x == y then (uncommonSuffix xs ys)
+                                   else ( (x : xs), (y : ys) )
+--------------------------------------------------------------------------------
 
 -- Searches edges leaving a single node for a desired prefix.
 -- Just a dumb search algorithm, we're only using it with 4 letters so
@@ -58,6 +76,9 @@ showSTree tree = ""
 instance Show (STree) where
   show t = showSTree t
 -}
+
+testEdge :: Edge
+testEdge = ("abcab$", Leaf)
 
 testTree :: STree
 testTree = Node [("ab", Node [("ca$", Leaf), ("$", Leaf)]),
