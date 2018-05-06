@@ -13,23 +13,13 @@ data STree = Leaf | Node [Edge]
 addTerminal ::  String -> String
 addTerminal s = s ++ "$"
 
--- Do we need to insert alphabetically? for now, I am not.
 -- Helper function that adds an edge to the graph
 insertEdge :: String -> STree -> STree
 insertEdge s Leaf = Node [(s, Leaf)]
 insertEdge s (Node xs) = Node (xs ++ (s , Leaf) : [])
 
-{- Split an edge into a subtree, after a given prefix.
-   Assume that at least 1 letter from string matches, and will always
-   end with "$"
-
-   Case 1: Edge to split ends in a leaf:
-     In this case, we should just traverse the leaf and insert the
-     suffix at the first point where input string and edge string
-     are different. e.g. "ab$" and ("abcab$", Leaf) will become edge:
-     ("ab", Node [("$", Leaf), ("cab$", Leaf)])
-
-   Case 2: Edge to split contains part
+{- Split an edge into a subtree, given a partial matching substring, ending
+   in a leaf
 -}
 splitEdge :: String -> Edge -> Edge
 splitEdge [] e = ([], Leaf)
@@ -61,6 +51,26 @@ findPrefix s (Node ((prefix, tree) : edges) ) =
            if (head s) == (head prefix) then True
            else (findPrefix s (Node edges) )
 
+-- Finds a path within tree, given a String
+-- note: Make sure insertEdge retains the old node too.
+findAndInsert :: String -> STree -> STree
+findAndInsert s (Node []) = insertEdge s (Node [])
+findAndInsert s (Node ((s', Leaf) : []) ) =
+                if (commonPrefix s s') == [] then
+                  Node ((s', Leaf) : (s, Leaf) : [])
+                  else (Node ((splitEdge s (s', Leaf)) : []))
+findAndInsert s (Node ((s', Leaf) : (s'', n) : next) ) =
+                if (commonPrefix s s') == [] then     -- check next node 
+                  Node ((s', Leaf) : (s'', findAndInsert s n) : next)
+                  else (Node ((splitEdge s (s', Leaf)) : next))
+findAndInsert s (Node ((s', n) : [] ) ) =
+                if commonPrefix s s' == [] then
+                  insertEdge s (Node ((s', n) : []))
+                  else (Node ((s', findAndInsert s n) : []))
+                  
+                  
+
+
 mkTree :: String -> STree
 mkTree [] = Node []
 mkTree (x : xs) = Leaf
@@ -83,3 +93,15 @@ testEdge = ("abcab$", Leaf)
 testTree :: STree
 testTree = Node [("ab", Node [("ca$", Leaf), ("$", Leaf)]),
                  ("bca$", Leaf), ("ca", Leaf)]
+
+testTree1 :: STree
+testTree1 = Node []
+
+testString = "abcab$"
+
+a = findAndInsert "abcab$" testTree1
+b = findAndInsert "bcab$" (Node [("abcab$", Leaf)])
+c = findAndInsert "cab$" b
+d = findAndInsert "ab$" c
+e = findAndInsert "b$" d
+f = findAndInsert "$" e
