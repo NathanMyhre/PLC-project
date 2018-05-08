@@ -3,7 +3,7 @@ import Data.List
 type Edge = (String, STree)
 
  -- Dumb suffix tree that does not know about its alphabet 
-data STree = Leaf | Node [Edge]
+data STree = Leaf Int | Node [Edge]
   deriving Show
 
 
@@ -14,17 +14,17 @@ addTerminal ::  String -> String
 addTerminal s = s ++ "$"
 
 -- Helper function that adds an edge to the graph
-insertEdge :: String -> STree -> STree
-insertEdge s Leaf = Node [(s, Leaf)]
-insertEdge s (Node xs) = Node (xs ++ (s , Leaf) : [])
+insertEdge :: (String, Int) -> STree -> STree
+insertEdge (s, n) (Leaf n') = Node [(s, Leaf n)]
+insertEdge (s, n) (Node xs) = Node (xs ++ (s , Leaf n) : [])
 
 {- Split an edge into a subtree, given a partial matching substring, ending
    in a leaf
 -}
-splitEdge :: String -> Edge -> Edge
-splitEdge [] e = ([], Leaf)
-splitEdge s (s', n) = let (x, y) = (uncommonSuffix s s') in
-                      ((commonPrefix s s'), Node [(y, n), (x, Leaf)])
+splitEdge :: (String, Int) -> Edge -> Edge
+splitEdge ([], n) anything = ([], Leaf n)
+splitEdge (str, n) (str', subtree) = let (x, y) = (uncommonSuffix str str') in
+                      ((commonPrefix str str'), Node [(y, subtree), (x, Leaf n)])
 
 -- helpers for splitEdge -------------------------------------------------------
 -- Find common prefix between two strings
@@ -44,36 +44,29 @@ uncommonSuffix (x : xs) (y : ys) = if x == y then (uncommonSuffix xs ys)
 -- Searches edges leaving a single node for a desired prefix.
 -- Just a dumb search algorithm, we're only using it with 4 letters so
 -- no need for efficiency.
-findPrefix :: String -> STree -> Bool
+{-findPrefix :: String -> STree -> Bool
 findPrefix s Leaf = False
 findPrefix s (Node []) = False
 findPrefix s (Node ((prefix, tree) : edges) ) =
            if (head s) == (head prefix) then True
-           else (findPrefix s (Node edges) )
+           else (findPrefix s (Node edges) ) -}
 
 -- Finds a path within tree, given a String
 -- note: Make sure insertEdge retains the old node too.
-findAndInsert :: String -> STree -> STree
-findAndInsert s (Node []) = insertEdge s (Node [])
-findAndInsert s (Node ((s', Leaf) : []) ) =
-                if (commonPrefix s s') == [] then
-                  Node ((s', Leaf) : (s, Leaf) : [])
-                  else (Node ((splitEdge s (s', Leaf)) : []))
-findAndInsert s (Node ((s', Leaf) : (s'', n) : next) ) =
-                if (commonPrefix s s') == [] then     -- check next node 
-                  Node ((s', Leaf) : (s'', findAndInsert s n) : next)
-                  else (Node ((splitEdge s (s', Leaf)) : next))
-findAndInsert s (Node ((s', n) : [] ) ) =
-                if commonPrefix s s' == [] then
-                  insertEdge s (Node ((s', n) : []))
-                  else (Node ((s', findAndInsert s n) : []))
-                  
-                  
-
-
+findAndInsert :: (String, Int) -> STree -> STree
+findAndInsert (s, n) node = case node of
+     Node [] -> insertEdge (s, n) node
+     Node ((first, tree) : next) -> if commonPrefix s first == [] then
+           let ((second, subtree') : next') = next in
+           Node ((first, tree) : (second, (findAndInsert (s,n) subtree')) : next')
+         else case tree of
+                Leaf n' -> Node ((splitEdge (s, n) (first,tree)) : next)
+                Node edges -> Node ((first, (findAndInsert (s,n) tree)) : next)
+      
+       
 mkTree :: String -> STree
 mkTree [] = Node []
-mkTree (x : xs) = Leaf
+
 
 -- Helper for Show functions ---------------------------------------------------
 
@@ -87,21 +80,20 @@ instance Show (STree) where
   show t = showSTree t
 -}
 
-testEdge :: Edge
-testEdge = ("abcab$", Leaf)
 
 testTree :: STree
-testTree = Node [("ab", Node [("ca$", Leaf), ("$", Leaf)]),
-                 ("bca$", Leaf), ("ca", Leaf)]
+testTree =Node [("ab",Node [("",Leaf 3),("cab",Leaf 0)]),("b",Node [("",Leaf 4),("cab",Leaf 1)]),("cab",Leaf 2)]
+
+testTreeInc = Node [("abcab", Leaf 0)]
 
 testTree1 :: STree
 testTree1 = Node []
 
 testString = "abcab$"
 
-a = findAndInsert "abcab$" testTree1
+{-a = findAndInsert "abcab$" testTree1
 b = findAndInsert "bcab$" (Node [("abcab$", Leaf)])
 c = findAndInsert "cab$" b
 d = findAndInsert "ab$" c
 e = findAndInsert "b$" d
-f = findAndInsert "$" e
+f = findAndInsert "$" e-}
