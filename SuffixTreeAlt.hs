@@ -1,4 +1,6 @@
-{- Important: This SuffixTree file was obtained from the following URL:
+{- Important: This SuffixTree type file was obtained from the following URL:
+
+  - Our broken suffix Tree data type is located in suffix-tree.hs.
 
    https://stackoverflow.com/questions/41333083/building-a-suffix-tree-by-inserting-each-suffix-in-haskell
 
@@ -24,25 +26,6 @@ data SuffixTrie
   = Leaf' Int
   | Node' (Map (Maybe Char) SuffixTrie)
 
-
-buildTrie :: String -> SuffixTrie
-buildTrie s = foldl go (flip const) (init $ tails s) (length s) $ Node' empty
-  where
-  go run xs i (Node' ns) = run (i - 1) $ Node' tr
-    where tr = foldr loop (insert Nothing $ Leaf' (i - 1)) xs ns
-  loop x run = insertWith (+:) (Just x) . Node' $ run empty
-    where _ +: Node' ns = Node' $ run ns
-
-buildTree :: String -> SuffixTree
-buildTree = loop . buildTrie
-  where
-  loop (Leaf' i) = Leaf i
-  loop (Node' m) = Node $ con . second loop <$> assocs m
-  con (Just x, Node [(xs, tr)]) = (x:xs, tr) -- compress single-child nodes
-  con n = maybeToList `first` n
-
-doToTree :: ( a -> b ) -> (c, a) -> b
-doToTree f (str, b ) = f b
 
 -- Helper functions written by us ----------------------------------------------
 
@@ -72,3 +55,21 @@ addTermCharE :: (String, SuffixTree) -> (String, SuffixTree)
 addTermCharE (str, tree) = case tree of
   Leaf n -> ( (str ++ "$", tree) )
   Node xs -> ( str, (addTermChar tree) )
+
+-- Tree Construction, written by some kind stranger on the internet ------------
+
+buildTrie :: String -> SuffixTrie
+buildTrie s = foldl go (flip const) (init $ tails s) (length s) $ Node' empty
+  where
+  go run xs i (Node' ns) = run (i - 1) $ Node' tr
+    where tr = foldr loop (insert Nothing $ Leaf' (i - 1)) xs ns
+  loop x run = insertWith (+:) (Just x) . Node' $ run empty
+    where _ +: Node' ns = Node' $ run ns
+
+buildTree :: String -> SuffixTree
+buildTree = loop . buildTrie
+  where
+  loop (Leaf' i) = Leaf i
+  loop (Node' m) = Node $ con . second loop <$> assocs m
+  con (Just x, Node [(xs, tr)]) = (x:xs, tr) -- compress single-child nodes
+  con n = maybeToList `first` n
