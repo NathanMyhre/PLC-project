@@ -61,18 +61,7 @@ findAndInsertE (s, n) (str, tree) = let commStr = commonPrefix s str in
                 if y /= [] then splitEdge (s, n) (str, tree)--prefix not eaten
                 else (commStr, (findAndInsert (s, n) tree))
               else (str, (findAndInsert (s, n) tree))
-
-  {-findAndInsert :: (String, Int) -> STree -> STree
-findAndInsert (s, n) node = case node of
-     Node [] -> insertEdge (s, n) node
-     Node ((first, tree) : next) -> if commonPrefix s first == [] then
-           let ((second, subtree') : next') = next in
-           Node ((first, tree) : (second, (findAndInsert (s,n) subtree')) : next')
-         else case tree of
-                Leaf n' -> Node ((splitEdge (s, n) (first,tree)) : next)
-                Node edges -> Node ((first, (findAndInsert (s,n) tree)) : next)
-      
-   -}    
+   
 mkTree :: String -> STree
 mkTree [] = Node []
 
