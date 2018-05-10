@@ -1,3 +1,5 @@
+module SuffixTree where
+
 import Data.List
 
 type Edge = (String, STree)
@@ -105,25 +107,3 @@ mkTree str = addTermChar (buildTree (reverse (suffixes str)) ( (length str) - 1)
 buildTree :: [String] -> Int -> STree
 buildTree [] n = Node []
 buildTree (s : str) n =  findAndInsert (s, n) (buildTree str (n - 1))
-  
--- Test variables --------------------------------------------------------------
-
-
-testTree :: STree
-testTree = Node [("ab",Node [("",Leaf 3),("cab",Leaf 0)]),("b",Node [("",Leaf 4),("cab",Leaf 1)]),("cab",Leaf 2)]
-
-testTreeInc = Node [("abcab", Leaf 0)]
-
-testTree1 :: STree
-testTree1 = Node []
-
-testString = "abcab$"
-
-a = findAndInsert ("abcab$", 0) testTree1
-b = findAndInsert ("bcab$", 1) a
-c = findAndInsert ("cab$", 2) b
-d = findAndInsert ("ab$", 3) c
-e = findAndInsert ("b$", 4) d
-f = findAndInsert ("$", 5) e
-
-
