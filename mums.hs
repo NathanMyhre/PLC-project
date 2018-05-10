@@ -4,19 +4,19 @@ import SuffixTree
 
 -- Depth first search, returns the Leaf numbers from the tree's leaves
 dfsLeaves :: STree -> [Int]
-dfLeaves (Leaf n) = (n : [])
+dfsLeaves (Leaf n) = (n : [])
 dfsLeaves (Node [] ) = []
 dfsLeaves (Node ((str, tree) : next)) = 
   let x = (map getTree next) in
     (dfsLeaves tree) ++ (foldr (++) [] (map dfsLeaves x))
 
 -- Finds the number of internal nodes in a Suffix Tree.
-numberOfNodes :: Int -> STree  -> Int
-numberOfNodes n (Leaf n') = 0
-numberOfNodes n (Node []) = 0
-numberOfNodes n (Node ( (str, tree) : next) ) =
+numberOfNodes :: STree  -> Int
+numberOfNodes (Leaf n') = 0
+numberOfNodes (Node []) = 0
+numberOfNodes (Node ( (str, tree) : next) ) =
   let x = (map getTree next) in
-    1 + (numberOfNodes n tree) + (foldr (+) 0 (map (numberOfNodes n ) x)) 
+    1 + (numberOfNodes tree) + (foldr (+) 0 (map (numberOfNodes ) x)) 
 
 -- Finds if a substring exists within a suffix tree and return it.
 -- Returns a list of substrings, along with number of nodes it traversed.
